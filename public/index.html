@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,33 +16,46 @@
       margin: 5px;
     }
 
-    .free { background-color: green; }
-    .busy { background-color: orange; }
-    .reserved { background-color: red; }
+    .free {
+      background-color: green;
+    }
+
+    .busy {
+      background-color: orange;
+    }
+
+    .reserved {
+      background-color: red;
+    }
+
+    .selected {
+      box-shadow: 0 0 10px #00c3ff;
+    }
   </style>
 </head>
+
 <body>
   <h1>Cinema Seat Reservation</h1>
   <p>Please select a seat and click the "Reserve" button to proceed with the reservation.</p>
-  
+
   <div id="seats">
-    <!-- Seats will be populated here -->
+    <!-- Seats here -->
   </div>
-  <button onclick="reserveSelectedSeats()">Reserve Selected Seats</button>
+  <button onclick="changeStatusToBusy()">Reserve Selected Seats</button>
 
   <script>
     const selectedSeats = new Set();
 
     function selectSeat(seatId) {
-  const seatElement = document.getElementById(`seat-${seatId}`);
-  if (seatElement.classList.contains('selected')) {
-    seatElement.classList.remove('selected');
-    selectedSeats.delete(seatId);
-  } else {
-    seatElement.classList.add('selected');
-    selectedSeats.add(seatId);
-  }
-}
+      const seatElement = document.getElementById(`seat-${seatId}`);
+      if (seatElement.classList.contains('selected')) {
+        seatElement.classList.remove('selected');
+        selectedSeats.delete(seatId);
+      } else {
+        seatElement.classList.add('selected');
+        selectedSeats.add(seatId);
+      }
+    }
 
     async function updateSeats() {
       const response = await fetch('/seats', {
@@ -58,52 +72,61 @@
       seatsData.forEach(seat => {
         const seatElement = document.createElement('div');
         seatElement.className = `seat ${seat.status}`;
+        seatElement.id = `seat-${seat.id}`;
         seatElement.innerText = seat.id;
-        seatElement.onclick = () => reserveSeat(seat.id);
+        seatElement.onclick = () => selectSeat(seat.id);
 
         seatsContainer.appendChild(seatElement);
       });
     }
-    async function reserveSeat(seatId) {
-  const confirmReservation = confirm(`Do you want to reserve Seat ${seatId}?`);
-  if (confirmReservation) {
-    try {
-      await fetch('/changeStatusToBusy', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ seatId }),
-      });
-      updateSeats();    
-      const userEmail = prompt('Please enter your email to confirm the reservation:');
-        if (userEmail !== null) {
-            const response = await fetch('/reserve', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ seatId, userEmail })
-            });
-
-            const data = await response.json();
-            if (data.message === 'Seat reservation successful!') {
-              alert('Seat reserved successfully!');
-            } else {
-              alert('Seat reservation failed.');
-            }
-            updateSeats(); 
-          }
-    } catch (error) {
-      console.error('Error changing seat status to busy:', error);
+    async function changeStatusToBusy() {
+      if (selectedSeats.size === 0) {
+        alert('Please select at least one seat to reserve.');
+        return;
+      }
+      const confirmReservation = confirm(`Do you want to reserve the selected seats: ${Array.from(selectedSeats).join(', ')}?`);
+      if (confirmReservation) {
+        try {
+          console.log(selectedSeats);
+          await fetch('/changeStatusToBusy', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ selectedSeats: Array.from(selectedSeats) }),
+          });
+          updateSeats();
+          ReserveSeats();
+        } catch (error) {
+          console.error('Error changing seat status to busy:', error);
+        }
+      }
     }
-  }
-}
-   
-   
+    async function ReserveSeats() {
+      const userEmail = prompt('Please enter your email to confirm the reservation:');
+      if (userEmail !== null) {
+        const response = await fetch('/reserve', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ selectedSeats: Array.from(selectedSeats), userEmail })
+        });
+
+        const data = await response.json();
+        if (data.message === 'Seats reserved successfully!') {
+          alert('Seats reserved successfully!');
+        } else {
+          alert('Seat reservation failed.');
+        }
+      }
+      updateSeats();
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       updateSeats();
     });
   </script>
 </body>
+
 </html>
