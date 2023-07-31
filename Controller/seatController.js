@@ -1,21 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const mysql = require('mysql');
+const connection = require('../dbConfig');
 
-const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'Codecool',
-    database: 'cinema_reservation'
-});
-
-connection.connect((err) => {
-    if (err) {
-        console.error('Error connecting to the database:', err);
-        return;
-    }
-    console.log('Connected to the database!');
-});
 
 router.get('/seats', (req, res) => {
     const query = 'SELECT id, status FROM seats';

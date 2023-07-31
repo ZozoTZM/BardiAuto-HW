@@ -1,11 +1,5 @@
-const mysql = require('mysql');
+const connection = require('../dbConfig');
 
-const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'Codecool',
-  database: 'cinema_reservation'
-});
 
 function initializeDatabase() {
   const query = 'UPDATE seats SET status = ?, email = ? WHERE id = ?';
