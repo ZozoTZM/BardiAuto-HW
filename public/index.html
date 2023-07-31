@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cinema Seat Reservation</title>
+  <style>
+    .seat {
+      width: 30px;
+      height: 30px;
+      border: 1px solid black;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      margin: 5px;
+    }
+
+    .free { background-color: green; }
+    .busy { background-color: orange; }
+    .reserved { background-color: red; }
+  </style>
+</head>
+<body>
+  <h1>Cinema Seat Reservation</h1>
+  <p>Please select a seat and click the "Reserve" button to proceed with the reservation.</p>
+  
+  <div id="seats">
+    <!-- Seats will be populated here -->
+  </div>
+  <button onclick="reserveSelectedSeats()">Reserve Selected Seats</button>
+
+  <script>
+    const selectedSeats = new Set();
+
+    function selectSeat(seatId) {
+  const seatElement = document.getElementById(`seat-${seatId}`);
+  if (seatElement.classList.contains('selected')) {
+    seatElement.classList.remove('selected');
+    selectedSeats.delete(seatId);
+  } else {
+    seatElement.classList.add('selected');
+    selectedSeats.add(seatId);
+  }
+}
+
+    async function updateSeats() {
+      const response = await fetch('/seats', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      });
+
+      const seatsData = await response.json();
+      const seatsContainer = document.getElementById('seats');
+      seatsContainer.innerHTML = '';
+
+      seatsData.forEach(seat => {
+        const seatElement = document.createElement('div');
+        seatElement.className = `seat ${seat.status}`;
+        seatElement.innerText = seat.id;
+        seatElement.onclick = () => reserveSeat(seat.id);
+
+        seatsContainer.appendChild(seatElement);
+      });
+    }
+    async function reserveSeat(seatId) {
+  const confirmReservation = confirm(`Do you want to reserve Seat ${seatId}?`);
+  if (confirmReservation) {
+    try {
+      await fetch('/changeStatusToBusy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ seatId }),
+      });
+      updateSeats();    
+      const userEmail = prompt('Please enter your email to confirm the reservation:');
+        if (userEmail !== null) {
+            const response = await fetch('/reserve', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ seatId, userEmail })
+            });
+
+            const data = await response.json();
+            if (data.message === 'Seat reservation successful!') {
+              alert('Seat reserved successfully!');
+            } else {
+              alert('Seat reservation failed.');
+            }
+            updateSeats(); 
+          }
+    } catch (error) {
+      console.error('Error changing seat status to busy:', error);
+    }
+  }
+}
+   
+   
+    document.addEventListener('DOMContentLoaded', () => {
+      updateSeats();
+    });
+  </script>
+</body>
+</html>
