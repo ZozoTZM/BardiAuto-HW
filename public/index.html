@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cinema Seat Reservation</title>
+  <title>Mozi szék foglalás</title>
   <style>
     .seat {
       width: 30px;
@@ -16,15 +16,15 @@
       margin: 5px;
     }
 
-    .free {
+    .szabad {
       background-color: green;
     }
 
-    .busy {
+    .foglalt {
       background-color: orange;
     }
 
-    .reserved {
+    .elkelt {
       background-color: red;
     }
 
@@ -35,13 +35,13 @@
 </head>
 
 <body>
-  <h1>Cinema Seat Reservation</h1>
-  <p>Please select a seat and click the "Reserve" button to proceed with the reservation.</p>
+  <h1>Mozi szék foglalás</h1>
+  <p>Kérem válasszon ki a foglalni kívánt székeket.</p>
 
   <div id="seats">
     <!-- Seats here -->
   </div>
-  <button onclick="changeStatusToBusy()">Reserve Selected Seats</button>
+  <button onclick="changeStatusToBusy()">Kiválasztott székek lefoglalása</button>
 
   <script>
     const selectedSeats = new Set();
@@ -81,10 +81,10 @@
     }
     async function changeStatusToBusy() {
       if (selectedSeats.size === 0) {
-        alert('Please select at least one seat to reserve.');
+        alert('Kérem válasszon ki legalább egy széket');
         return;
       }
-      const confirmReservation = confirm(`Do you want to reserve the selected seats: ${Array.from(selectedSeats).join(', ')}?`);
+      const confirmReservation = confirm(`Szeretné lefoglalni a kiválasztott szobákat: ${Array.from(selectedSeats).join(', ')}?`);
       if (confirmReservation) {
         try {
           console.log(selectedSeats);
@@ -103,7 +103,7 @@
       }
     }
     async function ReserveSeats() {
-      const userEmail = prompt('Please enter your email to confirm the reservation:');
+      const userEmail = prompt('Adja meg az email címét a foglalás véglegesítéséhez:');
       if (userEmail !== null) {
         const response = await fetch('/reserve', {
           method: 'POST',
@@ -115,9 +115,9 @@
 
         const data = await response.json();
         if (data.message === 'Seats reserved successfully!') {
-          alert('Seats reserved successfully!');
+          alert('Szék(ek) sikeresen lefoglalva!');
         } else {
-          alert('Seat reservation failed.');
+          alert('Foglalás sikertelen.');
         }
       }
       updateSeats();

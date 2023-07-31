@@ -10,13 +10,13 @@ const connection = mysql.createConnection({
 function initializeDatabase() {
   const query = 'UPDATE seats SET status = ?, email = ? WHERE id = ?';
 
-  connection.query(query, ['free', null, 1], (err, result) => {
+  connection.query(query, ['szabad', null, 1], (err, result) => {
     if (err) {
       console.error('Error resetting seat 1:', err);
     }
   });
 
-  connection.query(query, ['free', null, 2], (err, result) => {
+  connection.query(query, ['szabad', null, 2], (err, result) => {
     if (err) {
       console.error('Error resetting seat 2:', err);
     }

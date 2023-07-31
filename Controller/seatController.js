@@ -76,15 +76,15 @@ router.post('/changeStatusToBusy', (req, res) => {
                     }
 
                     const seatStatus = selectResults[0].status;
-                    if (seatStatus !== 'reserved') {
-                        connection.query(queryUpdate, ['busy', seatId], (updateErr, updateResult) => {
+                    if (seatStatus !== 'elkelt') {
+                        connection.query(queryUpdate, ['foglalt', seatId], (updateErr, updateResult) => {
                             if (updateErr) {
-                                console.error(`Error changing seat ${seatId} status to busy:`, updateErr);
+                                console.error(`Error changing seat ${seatId} status to foglalt:`, updateErr);
                                 reject(updateErr);
                                 return;
                             }
 
-                            resolve(`Seat ${seatId} status changed to busy successfully!`);
+                            resolve(`Seat ${seatId} status changed to foglalt successfully!`);
                         });
                     } else {
                         reject(new Error(`Seat ${seatId} is already reserved`));
@@ -108,8 +108,8 @@ router.post('/changeStatusToBusy', (req, res) => {
                     for (const seatId of selectedSeats) {
                         setTimeout(() => {
                             connection.query(querySelect, [seatId], (checkStatusErr, checkStatusResult) => {
-                                if (!checkStatusErr && checkStatusResult.length > 0 && checkStatusResult[0].status === 'busy') {
-                                    connection.query(queryUpdate, ['free', null, seatId], (releaseErr, releaseResult) => {
+                                if (!checkStatusErr && checkStatusResult.length > 0 && checkStatusResult[0].status === 'foglalt') {
+                                    connection.query(queryUpdate, ['szabad', null, seatId], (releaseErr, releaseResult) => {
                                         if (releaseErr) {
                                             console.error('Error releasing seat:', releaseErr);
                                         }
@@ -119,7 +119,7 @@ router.post('/changeStatusToBusy', (req, res) => {
                         }, 2 * 60 * 1000);
                     }
 
-                    res.json({ message: 'Seats status changed to busy successfully!', selectedSeats: Array.from(selectedSeats) });
+                    res.json({ message: 'Seats status changed to foglalt successfully!', selectedSeats: Array.from(selectedSeats) });
                 });
             })
             .catch((error) => {
@@ -154,12 +154,12 @@ router.post('/reserve', (req, res) => {
                     }
 
                     const seatStatus = selectResults[0].status;
-                    if (seatStatus === 'reserved') {
-                        reject(new Error(`Seat ${seatId} is already reserved or sold`));
+                    if (seatStatus === 'elkelt') {
+                        reject(new Error(`Seat ${seatId} is already elkelt`));
                         return;
                     }
 
-                    connection.query(queryUpdate, ['reserved', userEmail, seatId], (updateErr, updateResult) => {
+                    connection.query(queryUpdate, ['elkelt', userEmail, seatId], (updateErr, updateResult) => {
                         if (updateErr) {
                             console.error('Error reserving seat:', updateErr);
                             reject(updateErr);
